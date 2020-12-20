@@ -1,4 +1,6 @@
 import json
+from getpass import getpass
+
 user_db = dict()
 loggedin = False
 nick = None
@@ -32,7 +34,7 @@ def login(nickname, password):
 def signup():
     global loggedin, nick
     nickname = input("Type in your nickname:")
-    password = input("Type in your password:")
+    password = getpass(prompt="Type in your password:")
     name = input("Type in your name:")
     surname = input("Type in your surname:")
     experience = input("Type in how many problems have you solved in python: ")
@@ -65,7 +67,7 @@ def start():
     if choice == '1':
         while not loggedin:
             nickname = input("Please type in your nickname: ")
-            password = input("Password: ")
+            password = getpass(prompt="Password: ")
             login(nickname, password)
             if not loggedin:
                 if input("If you want to go back, type 1: ") == "1":
