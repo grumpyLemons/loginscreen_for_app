@@ -166,12 +166,14 @@ def start():
 
 
 def main():
+    # Required part
     global loggedin
     init()
     while True:
         gb = start()
         if not gb:
             break
+    # Required part
     while True:
         tmp = profile(loggedin)
         if not tmp:
