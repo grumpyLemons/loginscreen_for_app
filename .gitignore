@@ -148,3 +148,4 @@ cython_debug/
 out
 gen
 /user_database.json
+/token
