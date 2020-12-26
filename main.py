@@ -116,7 +116,7 @@ def change_nick(auth=False):
             del(user_db[nick])
             nick = new_nick
             save()
-            save_cookie()
+            save_cookie(auth)
             print("Successfully changed your username")
         else:
             print("This username already exists")
