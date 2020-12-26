@@ -1,4 +1,5 @@
 import json
+from os import remove
 from getpass import getpass
 
 user_db = dict()
@@ -22,20 +23,30 @@ def save():
 
 
 def check_cookie():
-    global loggedin
+    global loggedin, nick, user_db
     try:
         with open("token") as token:
-            if token.read() == "1":
+            content = token.read()
+            if content in user_db.keys():
                 loggedin = True
+                nick = content
     except FileNotFoundError:
         pass
 
 
-def save_cookie():
-    global loggedin
-    if loggedin:
+def save_cookie(auth=False):
+    global nick
+    if auth:
         with open("token", 'w') as token:
-            token.write("1")
+            token.write(nick)
+
+
+def del_cookie(auth=False):
+    if auth:
+        try:
+            remove("token")
+        except FileNotFoundError:
+            pass
 
 
 def login(nickname, password):
@@ -47,7 +58,7 @@ def login(nickname, password):
             print("Successfully logged in")
             choice = input("Remember password?(1 = yes): ")
             if choice == "1":
-                save_cookie()
+                save_cookie(loggedin)
                 print("Password saved")
         else:
             print("Incorrect password")
@@ -73,7 +84,7 @@ def signup():
             nick = nickname
             choice = input("Remember password?(1 = yes): ")
             if choice == "1":
-                save_cookie()
+                save_cookie(loggedin)
                 print("Password saved")
         except ValueError:
             print("Invalid type for experience")
@@ -113,56 +124,62 @@ def change_nick(auth=False):
 
 
 def profile(auth=False):
-    global nick, loggedin
+    global nick
     if auth:
         print(f"Hello, {user_db[nick]['name']} {user_db[nick]['surname']} ({nick})")
-        print("What do you want to do? \n 1)Change password \n 2)Change username \n 3)Return")
+        print("What do you want to do? \n 1)Change password \n 2)Change username \n 3)Return \n 0)Log out")
         choice = input()
-        while choice not in ["1", "2", "3"]:
+        while choice not in ["1", "2", "3", "0"]:
             choice = input()
         if choice == "1":
-            change_pwd(loggedin)
+            change_pwd(auth)
             return True
         elif choice == "2":
-            change_nick(loggedin)
+            change_nick(auth)
             return True
         elif choice == "3":
+            return False
+        elif choice == "0":
+            del_cookie(auth)
             return False
 
     else:
         print("Access denied")
 
 
-def start():
+def start(auth=False):
     global loggedin
-    print("What do you want to do? \n 1)Log in \n 2)Sign up \n 3)Exit")
-    choice = input()
-    while choice not in ["1", "2", "3"]:
+    if not auth:
+        print("What do you want to do? \n 1)Log in \n 2)Sign up \n 3)Exit")
         choice = input()
-    if choice == '1':
-        while not loggedin:
-            nickname = input("Please type in your nickname: ")
-            password = getpass(prompt="Password: ")
-            login(nickname, password)
-            if not loggedin:
-                if input("If you want to go back, type 1: ") == "1":
-                    break
-        else:
-            return False
-        return True
+        while choice not in ["1", "2", "3"]:
+            choice = input()
+        if choice == '1':
+            while not loggedin:
+                nickname = input("Please type in your nickname: ")
+                password = getpass(prompt="Password: ")
+                login(nickname, password)
+                if not loggedin:
+                    if input("If you want to go back, type 1: ") == "1":
+                        break
+            else:
+                return False
+            return True
 
-    elif choice == '2':
-        while not loggedin:
-            signup()
-            if not loggedin:
-                if input("If you want to go back, type 1: ") == "1":
-                    break
-        else:
-            return False
-        return True
-    elif choice == "3":
-        print("Goodbye!")
-        exit(0)
+        elif choice == '2':
+            while not loggedin:
+                signup()
+                if not loggedin:
+                    if input("If you want to go back, type 1: ") == "1":
+                        break
+            else:
+                return False
+            return True
+        elif choice == "3":
+            print("Goodbye!")
+            exit(0)
+    else:
+        return False
 
 
 def main():
@@ -170,7 +187,8 @@ def main():
     global loggedin
     init()
     while True:
-        gb = start()
+        check_cookie()
+        gb = start(loggedin)
         if not gb:
             break
     # Required part
